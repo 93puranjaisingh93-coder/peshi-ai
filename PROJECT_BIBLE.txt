@@ -1,0 +1,26 @@
+===================================================================
+PESHI AI - PROJECT BIBLE & CONTEXT SYNC
+===================================================================
+[PROJECT GOAL]
+Build "Peshi AI", a court-grade legal document intelligence system 
+for lawyers and legal teams. It transforms raw case files into 
+objective, cited strategic risk assessments.
+
+[CURRENT STATUS: MVP COMPLETE (~40%)]
+- UI: Built on Streamlit (wide layout, dual-column design).
+- Backend: Powered by Google GenAI SDK using 'gemini-2.5-flash'.
+- Ingestion: File uploader processes PDFs, uploads/caches them directly via GenAI File API.
+- Feature 1 (Analysis): Generates a fluid, evidence-backed "Strategic Blueprint" report.
+- Feature 2 (Deliverable): A "Download Analysis" button allows exporting reports as plain text.
+- Feature 3 (Chat): Continuous, context-aware legal Q&A sidebar.
+
+[HARD REASONING CONSTRAINTS]
+1. NO BIAS/PREDICTIONS: Never predict a final winner. Frame everything as a "Case Strength Assessment" using objective, risk-focused language.
+2. NO HALLUCINATION: If a fact is missing, state "Not found in documents." No guessing.
+3. STRICT CITATIONS: Every claim must be backed by a document reference like [Page X, Para Y].
+4. MULTI-LINGUAL: Natively understands and responds to English, Hindi, and Hinglish.
+
+[CURRENT DEVELOPMENT ENVIRONMENT]
+- File: app.py (Unified single-file architecture)
+- Local Execution: `streamlit run app.py` on localhost:8501
+===================================================================
