@@ -158,13 +158,12 @@ else:
         with doc_tab:
             with st.container(border=True):
                 st.subheader("Record Viewer")
-                # Dropdown to select which PDF to view if multiple are uploaded
                 selected_doc_idx = st.selectbox("Select Document to Read:", range(len(st.session_state.pdf_names)), format_func=lambda x: st.session_state.pdf_names[x])
                 
-                # Render the PDF using Base64 inside an iframe
+                # Render the PDF using Apple Safari-friendly Object/Embed tags
                 if st.session_state.pdf_bytes:
                     base64_pdf = base64.b64encode(st.session_state.pdf_bytes[selected_doc_idx]).decode('utf-8')
-                    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}#toolbar=0" width="100%" height="600" type="application/pdf"></iframe>'
+                    pdf_display = f'<object data="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="650px"><embed src="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="650px" /></object>'
                     st.markdown(pdf_display, unsafe_allow_html=True)
             
         with timeline_tab:
@@ -182,7 +181,7 @@ else:
                             )
                             st.session_state.last_timeline = response.text
                         except Exception as e:
-                            st.error(f"Error extracting timeline: {e}")
+                            st.error(f"Google API is currently overloaded. Please wait 10 seconds and try again. Error: {e}")
                 
                 if st.session_state.last_timeline:
                     st.markdown(st.session_state.last_timeline)
@@ -204,7 +203,7 @@ else:
                         )
                         st.session_state.last_analysis = response.text
                     except Exception as e:
-                        st.error(f"Execution fault: {e}")
+                        st.error(f"Google API is currently overloaded. Please wait 10 seconds and try again. Error: {e}")
 
             if st.session_state.last_analysis:
                 st.divider()
