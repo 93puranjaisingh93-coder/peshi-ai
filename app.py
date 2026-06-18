@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import tempfile
+import base64
 from google import genai
 from google.genai import types
 
@@ -12,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed" 
 )
 
-# --- CLEAN CSS (NO HACKY HTML DIVS) ---
+# --- CLEAN CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Georgia&display=swap');
@@ -23,14 +24,12 @@ st.markdown("""
         font-family: 'Inter', sans-serif !important;
     }
     
-    /* Headers */
     h1, h2, h3 {
         font-family: 'Georgia', serif !important;
         color: #111111 !important;
         font-weight: 600 !important;
     }
     
-    /* Primary Button */
     div.stButton > button:first-child {
         background-color: #111827 !important;
         color: #FDFDFD !important;
@@ -56,6 +55,10 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "gemini_files" not in st.session_state:
     st.session_state.gemini_files = []
+if "pdf_bytes" not in st.session_state:
+    st.session_state.pdf_bytes = []
+if "pdf_names" not in st.session_state:
+    st.session_state.pdf_names = []
 if "last_analysis" not in st.session_state:
     st.session_state.last_analysis = None
 if "last_timeline" not in st.session_state:
@@ -68,7 +71,7 @@ st.markdown("<h1>Peshi / पेशी <span style='font-family:Inter; font-size:
 st.divider()
 
 # =====================================================================
-# VIEW 1: ENTERPRISE DASHBOARD (NATIVE UI)
+# VIEW 1: ENTERPRISE DASHBOARD
 # =====================================================================
 if not st.session_state.gemini_files:
     dash_left, dash_right = st.columns([1.2, 1], gap="large")
@@ -77,7 +80,6 @@ if not st.session_state.gemini_files:
         st.subheader("Firm Dashboard & Vault")
         st.write("Access recent matters, intelligence reports, and active workflows across your practice.")
         
-        # Using native Streamlit containers instead of raw HTML
         with st.container(border=True):
             st.caption("RECENT ACTIVE MATTERS")
             st.markdown("**Writ Petition (C) 402/2026** - M/s Sharma Builders vs. State of Rajasthan 🟢 *Analysis Complete*")
@@ -107,9 +109,16 @@ if not st.session_state.gemini_files:
                         try:
                             client = genai.Client(api_key=st.session_state.stored_api_key)
                             st.session_state.gemini_files = [] 
+                            st.session_state.pdf_bytes = []
+                            st.session_state.pdf_names = []
+                            
                             for file in uploaded_files:
+                                file_data = file.read()
+                                st.session_state.pdf_bytes.append(file_data)
+                                st.session_state.pdf_names.append(file.name)
+                                
                                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                                    tmp.write(file.read())
+                                    tmp.write(file_data)
                                     tmp_path = tmp.name
                                 uploaded_file = client.files.upload(file=tmp_path)
                                 st.session_state.gemini_files.append(uploaded_file)
@@ -129,12 +138,14 @@ else:
         with st.container(border=True):
             st.subheader("📂 Active Brief")
             st.caption("INDEXED RECORDS")
-            for idx, file in enumerate(st.session_state.gemini_files):
-                st.write(f"📄 Document 0{idx+1}")
+            for name in st.session_state.pdf_names:
+                st.write(f"📄 {name}")
             
             st.divider()
             if st.button("Close Matter & Clear Memory", use_container_width=True):
                 st.session_state.gemini_files = []
+                st.session_state.pdf_bytes = []
+                st.session_state.pdf_names = []
                 st.session_state.last_analysis = None
                 st.session_state.last_timeline = None
                 st.session_state.messages = []
@@ -142,15 +153,19 @@ else:
 
     # --- PANE 2: CENTER WORKSPACE ---
     with pane_center:
-        doc_tab, timeline_tab = st.tabs(["📄 Document Analysis", "⏳ Chronology Engine"])
+        doc_tab, timeline_tab = st.tabs(["📄 Document Viewer", "⏳ Chronology Engine"])
         
         with doc_tab:
             with st.container(border=True):
-                st.subheader("Record Intelligence Ready")
-                st.write("Documents parsed. Use the Intelligence Board on the right to extract legal arguments.")
-                if st.session_state.last_analysis:
-                    st.divider()
-                    st.markdown(st.session_state.last_analysis)
+                st.subheader("Record Viewer")
+                # Dropdown to select which PDF to view if multiple are uploaded
+                selected_doc_idx = st.selectbox("Select Document to Read:", range(len(st.session_state.pdf_names)), format_func=lambda x: st.session_state.pdf_names[x])
+                
+                # Render the PDF using Base64 inside an iframe
+                if st.session_state.pdf_bytes:
+                    base64_pdf = base64.b64encode(st.session_state.pdf_bytes[selected_doc_idx]).decode('utf-8')
+                    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}#toolbar=0" width="100%" height="600" type="application/pdf"></iframe>'
+                    st.markdown(pdf_display, unsafe_allow_html=True)
             
         with timeline_tab:
             with st.container(border=True):
@@ -190,6 +205,10 @@ else:
                         st.session_state.last_analysis = response.text
                     except Exception as e:
                         st.error(f"Execution fault: {e}")
+
+            if st.session_state.last_analysis:
+                st.divider()
+                st.markdown(st.session_state.last_analysis)
 
             st.divider()
             st.caption("AGENTIC QUERY (English/Hinglish)")
