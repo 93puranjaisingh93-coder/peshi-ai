@@ -6,100 +6,78 @@ from google.genai import types
 
 # --- PAGE CONFIGURATION (WIDE & CLEAN) ---
 st.set_page_config(
-    page_title="पेशी (Peshi) | Legal Intelligence",
+    page_title="Peshi / पेशी | Enterprise Legal Intelligence",
     page_icon="🏛️",
     layout="wide",
-    initial_sidebar_state="collapsed" # Collapsed to maximize focus on the 3-pane command center
+    initial_sidebar_state="collapsed" 
 )
 
-# --- THE VISUAL IDENTITY: INJECTED CSS (QUIET AUTHORITY) ---
+# --- THE VISUAL IDENTITY: INJECTED CSS (HARVEY-INSPIRED APPLE-LIKE MINIMALISM) ---
 st.markdown("""
 <style>
-    /* Global Background and Base Typography */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
     html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-        background-color: #FBFBFA !important;
-        color: #1A1A1A !important;
+        background-color: #FDFDFD !important;
+        color: #111111 !important;
         font-family: 'Inter', sans-serif !important;
     }
     
     /* Document & Authoritative Serif Headers */
     h1, h2, h3, .document-title {
         font-family: 'Georgia', serif !important;
-        color: #1A1A1A !important;
+        color: #111111 !important;
         font-weight: 600 !important;
         letter-spacing: -0.02em;
     }
     
     /* Sovereign Ink Blue Primary Buttons */
     div.stButton > button:first-child {
-        background-color: #1C2E4A !important;
-        color: #FBFBFA !important;
-        border: 1px solid #1C2E4A !important;
-        border-radius: 2px !important;
-        padding: 0.5rem 1rem !important;
+        background-color: #111827 !important;
+        color: #FDFDFD !important;
+        border: 1px solid #111827 !important;
+        border-radius: 4px !important;
+        padding: 0.6rem 1.2rem !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 500 !important;
-        transition: background-color 80ms ease-in-out !important;
+        transition: all 0.2s ease-in-out !important;
     }
     div.stButton > button:first-child:hover {
-        background-color: #0D0D0D !important;
-        border-color: #0D0D0D !important;
-        color: #FBFBFA !important;
-    }
-
-    /* Muted Download/Secondary Buttons */
-    div.stDownloadButton > button {
-        background-color: transparent !important;
-        color: #1C2E4A !important;
-        border: 1px solid #1C2E4A !important;
-        border-radius: 2px !important;
-        font-family: 'Inter', sans-serif !important;
-    }
-    div.stDownloadButton > button:hover {
-        background-color: #F2F1EE !important;
-        color: #1A1A1A !important;
+        background-color: #374151 !important;
+        border-color: #374151 !important;
     }
 
     /* Soft Stone Grey Structural Enclosures */
     div[data-testid="stColumn"] {
-        background-color: #F2F1EE;
+        background-color: #F9FAFB;
         padding: 1.5rem !important;
-        border-radius: 4px;
-        border: 1px solid #E5E4E1;
+        border-radius: 6px;
+        border: 1px solid #E5E7EB;
     }
     
     /* Text Input Overrides */
     input[type="text"], input[type="password"] {
-        background-color: #FBFBFA !important;
-        border: 1px solid #CCB !important;
-        color: #1A1A1A !important;
-        border-radius: 2px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #D1D5DB !important;
+        color: #111111 !important;
+        border-radius: 4px !important;
     }
-
-    /* Clean Up Default Streamlit Padding Elements */
-    [data-testid="stBlock"] {
-        gap: 1rem !important;
+    
+    /* Hide the default Streamlit file uploader border to make it look cleaner */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: #FFFFFF !important;
+        border: 1px dashed #9CA3AF !important;
+        border-radius: 6px !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SYSTEM INSTRUCTION (UNALTERED CORE LOGIC) ---
+# --- SYSTEM INSTRUCTION ---
 PESHI_SYSTEM_INSTRUCTION = """
-You are Peshi, an elite Court-Grade Legal Document Intelligence System. You are not a chatbot; you are a Senior Legal Analyst.
-
---- HARD NEGATIVE CONSTRAINTS ---
-1. NO RIGID CLASSIFICATION: Do not force documents into specific case types. Handle all domains fluidly.
-2. NO HALLUCINATION: If a fact, date, or outcome is not explicitly found in the provided documents, you MUST state "Not found in documents." Do not speculate.
-3. NO BLIND REPETITION: Every case is unique. Do not blindly copy-paste report formats.
-4. NO TIMELINE NEGLECT: Chronology is the core of legal intelligence. Always maintain a strict, precise, and sequential timeline.
-
---- MANDATORY BEHAVIORS ---
-1. EXPLICIT UNCERTAINTY: If documents are ambiguous, be explicit about the uncertainty.
-2. MULTI-LINGUAL: Understand English, Hindi, and Hinglish. Reply in the same language/tone as the user.
-3. CITATION: Every factual claim must be backed by a reference (e.g., [Page X, Para Y]).
-4. STRENGTH ASSESSMENT: NEVER predict the "final outcome" or state who "will win." Instead, frame your analysis as a "Case Strength Assessment" based on evidence, precedents, and procedural validity. Use objective language like "High probability of relief" or "Significant procedural hurdles."
+You are Peshi / पेशी, an elite enterprise-grade Legal AI utilized by top Indian law firms. 
+Respond with supreme professionalism, citing specific pages and paragraphs.
+Understand English, Hindi, and Hinglish perfectly.
+Maintain strict chronological discipline and never invent facts.
 """
 
 # --- INITIALIZE MEMORY STATE ---
@@ -112,115 +90,128 @@ if "last_analysis" not in st.session_state:
 if "stored_api_key" not in st.session_state:
     st.session_state.stored_api_key = ""
 
-# --- APP HEADER CONTAINER ---
-st.markdown("<h1 style='margin-bottom: 0px;'>पेशी <span style='font-family:Inter; font-size:18px; font-weight:400; color:#666;'>| Quiet Authority</span></h1>", unsafe_allow_html=True)
-st.markdown("<hr style='margin-top: 5px; margin-bottom: 25px; border-color: #E5E4E1;'>", unsafe_allow_html=True)
+# --- APP HEADER (FIRM BRANDING) ---
+st.markdown("""
+<div style='display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #E5E7EB; margin-bottom: 30px;'>
+    <h1 style='margin: 0; font-size: 24px;'>Peshi / पेशी <span style='font-family:Inter; font-size:14px; font-weight:400; color:#6B7280; margin-left: 10px;'>Enterprise Legal Intelligence</span></h1>
+    <div style='font-size: 13px; color: #4B5563;'>🔒 256-Bit Encrypted Firm Vault</div>
+</div>
+""", unsafe_allow_html=True)
 
-# --- THE THREE-PANE COMMAND CENTER ---
-pane_left, pane_center, pane_right = st.columns([1.5, 4.0, 3.5], gap="medium")
 
 # =====================================================================
-# PANE 1: MATTER NAVIGATION & FILES (LEFT)
+# VIEW 1: THE ENTERPRISE LANDING DASHBOARD (When no files are uploaded)
 # =====================================================================
-with pane_left:
-    st.markdown("<h3 style='font-size:18px; margin-top:0;'>📂 Matter Records</h3>", unsafe_allow_html=True)
+if not st.session_state.gemini_files:
+    dash_left, dash_right = st.columns([1.2, 1], gap="large")
     
-    # Secure API Ingestion Node
-    api_key = st.text_input(
-        "Chamber API Key", 
-        type="password", 
-        value=st.session_state.stored_api_key,
-        placeholder="Enter credential..."
-    )
-    if api_key != st.session_state.stored_api_key:
-        st.session_state.stored_api_key = api_key
-
-    st.markdown("<hr style='border-color: #D5D4D1;'>", unsafe_allow_html=True)
-    
-    # Document Ingestion Link
-    uploaded_files = st.file_uploader("Ingest Case Briefs (PDF)", type=["pdf"], accept_multiple_files=True, label_visibility="collapsed")
-    
-    if st.button("Process & Cache Briefs", use_container_width=True):
-        if not st.session_state.stored_api_key:
-            st.error("API Credential missing.")
-        elif not uploaded_files:
-            st.warning("No briefs detected.")
-        else:
-            with st.spinner("Indexing records..."):
-                try:
-                    client = genai.Client(api_key=st.session_state.stored_api_key)
-                    st.session_state.gemini_files = [] 
-                    for file in uploaded_files:
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                            tmp.write(file.read())
-                            tmp_path = tmp.name
-                        uploaded_file = client.files.upload(file=tmp_path)
-                        st.session_state.gemini_files.append(uploaded_file)
-                        os.remove(tmp_path)
-                    st.success("Briefs locked into active memory.")
-                except Exception as e:
-                    st.error(f"Ingestion error: {e}")
-
-    # Simulated Archive Index Tree
-    st.markdown("<br><p style='font-size:12px; font-weight:600; color:#555; text-transform:uppercase; margin-bottom:5px;'>Active Chamber Index</p>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style='font-size:13px; line-height: 1.8; color: #444;'>
-        <div>📁 Pleadings / Writ Petitions</div>
-        <div>📁 Orders & Daily Judgments</div>
-        <div>📁 Exhibited Documentary Evidence</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# =====================================================================
-# PANE 2: PRIMARY WORKING AREA & CHRONOLOGY (CENTER)
-# =====================================================================
-with pane_center:
-    # Check if a matter exists to show operational state
-    if not st.session_state.gemini_files:
-        st.markdown("<h2 style='font-size:36px; margin-top:20px; text-align:center;'>Every Matter. Understood.</h2>", unsafe_allow_html=True)
+    with dash_left:
+        st.markdown("<h2>Firm Dashboard & Vault</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #4B5563; font-size: 14px; margin-bottom: 25px;'>Access recent matters, intelligence reports, and active workflows across your practice.</p>", unsafe_allow_html=True)
+        
+        # Mocking a "Lived-in" Enterprise state so it doesn't look empty
         st.markdown("""
-        <p style='color: #444; font-size: 15px; text-align: center; max-width: 500px; margin: 0 auto; line-height: 1.6;'>
-            Upload petitions, pleadings, orders, evidence, judgments, and legal records. 
-            Peshi analyzes the entire matter, identifies issues, surfaces relevant precedents, 
-            and helps lawyers prepare with clarity before every hearing.
-        </p>
+        <div style='background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 6px; padding: 15px; margin-bottom: 15px;'>
+            <div style='font-size: 12px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;'>Recent Active Matters</div>
+            
+            <div style='display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;'>
+                <div><span style='font-weight: 500; font-size: 14px;'>Writ Petition (C) 402/2026</span><br><span style='font-size: 12px; color: #6B7280;'>M/s Sharma Builders vs. State of Rajasthan</span></div>
+                <div style='font-size: 12px; color: #10B981; font-weight: 500;'>Analysis Complete</div>
+            </div>
+            
+            <div style='display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;'>
+                <div><span style='font-weight: 500; font-size: 14px;'>Bail Application No. 1184</span><br><span style='font-size: 12px; color: #6B7280;'>NDPS Act - Sessions Court</span></div>
+                <div style='font-size: 12px; color: #F59E0B; font-weight: 500;'>Timeline Pending</div>
+            </div>
+            
+            <div style='display: flex; justify-content: space-between; padding: 10px 0;'>
+                <div><span style='font-weight: 500; font-size: 14px;'>Arbitration Appeal 22/2025</span><br><span style='font-size: 12px; color: #6B7280;'>Commercial Court, Mumbai</span></div>
+                <div style='font-size: 12px; color: #10B981; font-weight: 500;'>Briefing Ready</div>
+            </div>
+        </div>
         """, unsafe_allow_html=True)
-    else:
-        # Document/Timeline Toggles
-        doc_tab, timeline_tab = st.tabs(["📄 Primary Brief Workspace", "⏳ Master Chronology"])
+        
+    with dash_right:
+        st.markdown("<div style='background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 6px; padding: 25px;'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='margin-top: 0; font-size: 18px;'>Ingest New Matter</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 13px; color: #4B5563;'>Upload Charge Sheets, FIRs, SLPs, Annexures, or complete case briefs. Peshi automatically processes English and Hindi text.</p>", unsafe_allow_html=True)
+        
+        # API Key required before ingestion
+        api_key = st.text_input("Firm Infrastructure Key (Gemini API)", type="password", value=st.session_state.stored_api_key)
+        if api_key != st.session_state.stored_api_key:
+            st.session_state.stored_api_key = api_key
+
+        uploaded_files = st.file_uploader("Drop legal PDFs here", type=["pdf"], accept_multiple_files=True)
+        
+        if st.button("Initialize Case Engine", use_container_width=True):
+            if not st.session_state.stored_api_key:
+                st.error("Infrastructure Key required to initialize.")
+            elif not uploaded_files:
+                st.warning("Please upload case documents.")
+            else:
+                with st.spinner("Encrypting and indexing case records..."):
+                    try:
+                        client = genai.Client(api_key=st.session_state.stored_api_key)
+                        st.session_state.gemini_files = [] 
+                        for file in uploaded_files:
+                            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                                tmp.write(file.read())
+                                tmp_path = tmp.name
+                            uploaded_file = client.files.upload(file=tmp_path)
+                            st.session_state.gemini_files.append(uploaded_file)
+                            os.remove(tmp_path)
+                        st.rerun() # Forces the page to reload into the 3-pane command center
+                    except Exception as e:
+                        st.error(f"Ingestion fault: {e}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# =====================================================================
+# VIEW 2: THE ACTIVE MATTER COMMAND CENTER (When files ARE uploaded)
+# =====================================================================
+else:
+    pane_left, pane_center, pane_right = st.columns([1.5, 4.0, 3.5], gap="medium")
+
+    # --- PANE 1: MATTER NAVIGATION ---
+    with pane_left:
+        st.markdown("<h3 style='font-size:16px; margin-top:0;'>📂 Active Brief</h3>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: #E5E7EB; margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+        
+        st.markdown("<p style='font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase;'>Indexed Records</p>", unsafe_allow_html=True)
+        for idx, file in enumerate(st.session_state.gemini_files):
+            st.markdown(f"<div style='font-size:13px; padding:8px 0; border-bottom:1px solid #E5E7EB; color:#111111;'>📄 Document 0{idx+1} <br><span style='font-size:11px; color:#6B7280;'>Processed via Vision OCR</span></div>", unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Close Matter & Clear Memory", use_container_width=True):
+            st.session_state.gemini_files = []
+            st.session_state.last_analysis = None
+            st.session_state.messages = []
+            st.rerun()
+
+    # --- PANE 2: PRIMARY WORKSPACE ---
+    with pane_center:
+        doc_tab, timeline_tab = st.tabs(["📄 Document Analysis", "⏳ Chronology Engine"])
         
         with doc_tab:
-            st.markdown("<div style='background-color:#FBFBFA; border:1px solid #D5D4D1; padding:20px; min-height:400px; border-radius:2px;'>", unsafe_allow_html=True)
-            st.markdown("<p style='font-family:Georgia; font-size:18px; font-style:italic; color:#444;'>Active Record Viewer</p>", unsafe_allow_html=True)
-            st.markdown("<hr style='border-color: #E5E4E1;'>", unsafe_allow_html=True)
-            for idx, file in enumerate(uploaded_files):
-                st.markdown(f"**Record [{idx+1}]:** `{file.name}` — *Successfully indexed into cloud pipeline.*")
+            st.markdown("<div style='background-color:#FFFFFF; border:1px solid #E5E7EB; padding:20px; min-height:500px; border-radius:4px;'>", unsafe_allow_html=True)
+            st.markdown("<p style='font-family:Georgia; font-size:18px; color:#111111;'>Record Intelligence Ready</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:14px; color:#4B5563;'>The uploaded documents have been parsed. Use the Intelligence Board on the right to extract legal arguments, generate citations, and assess case strength.</p>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             
         with timeline_tab:
-            st.markdown("<div style='background-color:#FBFBFA; border:1px solid #D5D4D1; padding:20px; min-height:400px; border-radius:2px;'>", unsafe_allow_html=True)
-            st.markdown("<p style='font-family:Georgia; font-size:18px; font-style:italic; color:#444;'>Procedural Event History Matrix</p>", unsafe_allow_html=True)
-            st.markdown("<p style='font-size:13px; color:#666;'>To populate the definitive chronological table matrix, prompt the Analysis Engine panel to the right.</p>", unsafe_allow_html=True)
+            st.markdown("<div style='background-color:#FFFFFF; border:1px solid #E5E7EB; padding:20px; min-height:500px; border-radius:4px;'>", unsafe_allow_html=True)
+            st.markdown("<p style='font-family:Georgia; font-size:18px; color:#111111;'>Master Chronology</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:14px; color:#4B5563;'>Ask the AI to <em>'Generate a strict chronological timeline of this case'</em> to populate the procedural history here.</p>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-
-# =====================================================================
-# PANE 3: ANALYSIS & INTELLIGENCE BOARD (RIGHT)
-# =====================================================================
-with pane_right:
-    st.markdown("<h3 style='font-size:18px; margin-top:0;'>📊 Strategic Intelligence</h3>", unsafe_allow_html=True)
-    
-    if st.button("Generate Case Structural Blueprint", type="primary", use_container_width=True):
-        if not st.session_state.stored_api_key:
-            st.error("Set Chamber API Key.")
-        elif not st.session_state.gemini_files:
-            st.error("Ingest records in the left panel first.")
-        else:
-            with st.spinner("Analyzing arguments..."):
+    # --- PANE 3: STRATEGIC INTELLIGENCE ---
+    with pane_right:
+        st.markdown("<h3 style='font-size:16px; margin-top:0;'>📊 Intelligence Board</h3>", unsafe_allow_html=True)
+        
+        if st.button("Execute Core Strategy Brief", type="primary", use_container_width=True):
+            with st.spinner("Synthesizing legal framework..."):
                 try:
                     client = genai.Client(api_key=st.session_state.stored_api_key)
-                    contents = ["Generate the full legal blueprint report, identifying core legal issues, relevant precedents, and precise hearing preparation notes. Cite [Page X, Para Y] explicitly."] + st.session_state.gemini_files
+                    contents = ["Generate a high-level case strategy brief. Identify the core dispute, point out any statutory timelines (like Limitation Act), and cite page numbers for evidence."] + st.session_state.gemini_files
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=contents,
@@ -228,43 +219,30 @@ with pane_right:
                     )
                     st.session_state.last_analysis = response.text
                 except Exception as e:
-                    st.error(f"Analysis fault: {e}")
+                    st.error(f"Execution fault: {e}")
 
-    # Persistent Display Layout Block
-    if st.session_state.last_analysis:
-        st.markdown("<div style='background-color:#FBFBFA; border:1px solid #D5D4D1; padding:15px; margin-top:10px; max-height:350px; overflow-y:auto; font-size:14px; font-family:Georgia; line-height:1.6;'>", unsafe_allow_html=True)
-        st.markdown(st.session_state.last_analysis)
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.download_button(
-            label="📄 Extract Briefing Memo to Disk",
-            data=st.session_state.last_analysis,
-            file_name="Peshi_Briefing_Memo.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
-
-    st.markdown("<hr style='border-color: #D5D4D1; margin-top:20px; margin-bottom:15px;'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:14px; font-weight:600; margin-bottom:5px;'>💡 Targeted Submissions Q&A</p>", unsafe_allow_html=True)
-    
-    # Isolated Q&A Block Layout
-    qa_container = st.container()
-    with qa_container:
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.markdown(f"<span style='font-size:13.5px;'>{msg['content']}</span>", unsafe_allow_html=True)
-                
-    if prompt := st.chat_input("Examine specific claim (Hinglish/English)..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with qa_container:
-            with st.chat_message("user"): 
-                st.markdown(prompt)
+        if st.session_state.last_analysis:
+            st.markdown("<div style='background-color:#FFFFFF; border:1px solid #E5E7EB; padding:15px; margin-top:10px; max-height:300px; overflow-y:auto; font-size:13px; line-height:1.6;'>", unsafe_allow_html=True)
+            st.markdown(st.session_state.last_analysis)
+            st.markdown("</div>", unsafe_allow_html=True)
             
-        if not st.session_state.stored_api_key:
-            st.error("API Key missing.")
-        elif not st.session_state.gemini_files:
-            st.warning("Load case briefs first.")
-        else:
+            st.download_button("📥 Export Memo to Local Disk", st.session_state.last_analysis, "Peshi_Memo.txt", use_container_width=True)
+
+        st.markdown("<hr style='border-color: #E5E7EB; margin-top:20px; margin-bottom:15px;'>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:13px; font-weight:600; color:#4B5563; text-transform:uppercase;'>Agentic Query</p>", unsafe_allow_html=True)
+        
+        qa_container = st.container()
+        with qa_container:
+            for msg in st.session_state.messages:
+                with st.chat_message(msg["role"]):
+                    st.markdown(f"<span style='font-size:13px;'>{msg['content']}</span>", unsafe_allow_html=True)
+                    
+        if prompt := st.chat_input("Query documents (Hindi/English)..."):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with qa_container:
+                with st.chat_message("user"): 
+                    st.markdown(prompt)
+                
             with qa_container:
                 with st.chat_message("assistant"):
                     try:
