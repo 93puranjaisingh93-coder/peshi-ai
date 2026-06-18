@@ -36,23 +36,34 @@ if "gemini_files" not in st.session_state:
     st.session_state.gemini_files = []
 if "last_analysis" not in st.session_state:
     st.session_state.last_analysis = None
+if "stored_api_key" not in st.session_state:
+    st.session_state.stored_api_key = ""
 
 # --- UI: SIDEBAR ---
 with st.sidebar:
     st.header("📂 Peshi Data Ingestion")
-    api_key = st.text_input("Enter Gemini API Key", type="password")
+    
+    # Save API key to session state immediately upon user entry
+    api_key = st.text_input(
+        "Enter Gemini API Key", 
+        type="password", 
+        value=st.session_state.stored_api_key
+    )
+    if api_key != st.session_state.stored_api_key:
+        st.session_state.stored_api_key = api_key
+
     st.markdown("---")
     uploaded_files = st.file_uploader("Upload PDFs", type=["pdf"], accept_multiple_files=True)
     
     if st.button("Process & Cache Files"):
-        if not api_key:
+        if not st.session_state.stored_api_key:
             st.error("API Key required.")
         elif not uploaded_files:
             st.warning("Upload PDFs first.")
         else:
             with st.spinner("Caching files for Peshi..."):
                 try:
-                    client = genai.Client(api_key=api_key)
+                    client = genai.Client(api_key=st.session_state.stored_api_key)
                     st.session_state.gemini_files = [] 
                     for file in uploaded_files:
                         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -61,7 +72,7 @@ with st.sidebar:
                         uploaded_file = client.files.upload(file=tmp_path)
                         st.session_state.gemini_files.append(uploaded_file)
                         os.remove(tmp_path)
-                    st.success("Documents ready.")
+                    st.success("Documents ready and cached.")
                 except Exception as e:
                     st.error(f"Upload error: {e}")
 
@@ -73,12 +84,14 @@ col1, col2 = st.columns([1.2, 1])
 with col1:
     st.subheader("📊 Strategic Blueprint")
     if st.button("Generate Full 12-Section Analysis", type="primary"):
-        if not st.session_state.gemini_files:
-            st.error("Upload files first.")
+        if not st.session_state.stored_api_key:
+            st.error("Please set your Gemini API key in the sidebar.")
+        elif not st.session_state.gemini_files:
+            st.error("Upload and process files first.")
         else:
             with st.spinner("Peshi is analyzing..."):
                 try:
-                    client = genai.Client(api_key=api_key)
+                    client = genai.Client(api_key=st.session_state.stored_api_key)
                     contents = ["Generate the full legal blueprint report, citing [Page X, Para Y] for every point."] + st.session_state.gemini_files
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
@@ -86,11 +99,12 @@ with col1:
                         config=types.GenerateContentConfig(system_instruction=PESHI_SYSTEM_INSTRUCTION)
                     )
                     st.session_state.last_analysis = response.text
-                    st.markdown(response.text)
                 except Exception as e:
                     st.error(f"Analysis error: {e}")
 
+    # Persistent display: Render old analysis even if browser refreshes
     if st.session_state.last_analysis:
+        st.markdown(st.session_state.last_analysis)
         st.download_button(
             label="📄 Download Analysis as Text/Report",
             data=st.session_state.last_analysis,
@@ -101,20 +115,26 @@ with col1:
 # Column 2: Chat
 with col2:
     st.subheader("💬 Continuous Q&A")
+    
+    # Render all past messages in state memory
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             
     if prompt := st.chat_input("Ask anything (Hinglish/Hindi/English)..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"): st.markdown(prompt)
+        with st.chat_message("user"): 
+            st.markdown(prompt)
             
-        if not st.session_state.gemini_files:
-            st.warning("Upload files first.")
+        if not st.session_state.stored_api_key:
+            st.error("Please add your API Key in the sidebar.")
+        elif not st.session_state.gemini_files:
+            st.warning("Upload and process files first.")
         else:
             with st.chat_message("assistant"):
                 try:
-                    client = genai.Client(api_key=api_key)
+                    client = genai.Client(api_key=st.session_state.stored_api_key)
+                    # Pull chat context up to last 5 interactions
                     chat_context = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-5:]])
                     full_query = f"Context:\n{chat_context}\n\nQuestion: {prompt}"
                     
